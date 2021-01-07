@@ -3,7 +3,8 @@ import { Cookie, CookieSetOptions } from 'universal-cookie';
 import CookiesContext from './CookiesContext';
 
 export default function useCookies(
-  dependencies?: string[]
+  dependencies?: string[],
+  listenerTimeout? : number
 ): [
   { [name: string]: any },
   (name: string, value: Cookie, options?: CookieSetOptions) => void,
@@ -35,9 +36,16 @@ export default function useCookies(
       previousCookiesRef.current = newCookies;
     }
 
+    let listenerInterval : ReturnType<typeof setInterval>
+    if(listenerTimeout){
+      console.log("Mounting a cookie listener")
+      listenerInterval = setInterval(onChange, listenerTimeout);
+    }
+
     cookies.addChangeListener(onChange);
 
     return () => {
+      clearInterval(listenerTimeout);
       cookies.removeChangeListener(onChange);
     };
   }, [cookies]);
